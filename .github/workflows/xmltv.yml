@@ -1,0 +1,61 @@
+---
+name: Generate XMLTV data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2,6,10,14,18,22 * * *'
+
+jobs:
+  generate_xmltv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out melmorabity/tv_grab_fr_teleloisirs repository
+        uses: actions/checkout@v2
+        with:
+          repository: melmorabity/tv_grab_fr_teleloisirs
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+      - name: Configure grabber
+        run: |-
+          rm -f tv_grab_fr_teleloisirs.conf
+          for id in $XMLTV_IDS; do
+              echo "channel=$id.api-tel.programme-tv.net" >>tv_grab_fr_teleloisirs.conf
+          done
+        env:
+          XMLTV_IDS: 192 4 1939 34 47 118 681 445 119 195 446 444 234 78 481 226 458 482 1404 1401 1403 1402 1400 1399 112 2111 1077 703 701 145 35 33 147
+      - name: Run grabber
+        run: python tv_grab_fr_teleloisirs.py --config-file tv_grab_fr_teleloisirs.conf --days 7 --output xmltv_teleloisirs.xml
+        env:
+          TZ: Europe/Paris
+      - name: Upload XMLTV file
+        uses: actions/upload-artifact@v2
+        with:
+          name: xmltv
+          path: xmltv_teleloisirs.xml
+
+  export_xmltv:
+    needs:
+      - generate_xmltv
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Download XMLTV file
+        uses: actions/download-artifact@v2
+        with:
+          name: xmltv
+          path: .
+      - name: Add XMLTV file to repository
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions"
+          git add xmltv_teleloisirs.xml
+          if ! git diff-index --cached --quiet HEAD --; then
+              git commit -m "$(date)"
+              git push
+          fi
