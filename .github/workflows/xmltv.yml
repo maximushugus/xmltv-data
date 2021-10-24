@@ -4,7 +4,7 @@ name: Generate XMLTV data
 on:
   workflow_dispatch:
   schedule:
-    - cron: '47 2,6,10,14,16,18,22 * * *'
+    - cron: '0 6,18 * * *'
 
 jobs:
   generate_xmltv:
