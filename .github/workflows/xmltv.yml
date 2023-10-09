@@ -10,10 +10,10 @@ jobs:
   generate_xmltv:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out melmorabity/tv_grab_fr_teleloisirs repository
+      - name: Check out maximushugus/tv_grab_fr_teleloisirs repository
         uses: actions/checkout@v2
         with:
-          repository: melmorabity/tv_grab_fr_teleloisirs
+          repository: maximushugus/tv_grab_fr_teleloisirs
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
